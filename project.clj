@@ -27,11 +27,10 @@
 
   :cljsbuild
   {:builds
-   [
-
-    {:id           "devcards"
+   [{:id           "devcards"
      :source-paths ["src/devcards" "src/cljs"]
-     :figwheel     {:devcards true}
+     :figwheel     {:devcards true
+                    :on-jsload "tx-demo.core-card/reload"}
      :compiler     {:main                 "tx-demo.core-card"
                     :optimizations        :none
                     :output-to            "resources/public/js/devcards.js"
@@ -45,21 +44,6 @@
                       :fn-symbol              "F"
                       :print-config-overrides true}}}}
 
-    {:id           "dev"
-     :source-paths ["src/cljs"]
-     :figwheel     {:on-jsload "tx-demo.core/reload"}
-     :compiler     {:main                 tx-demo.core
-                    :optimizations        :none
-                    :output-to            "resources/public/js/app.js"
-                    :output-dir           "resources/public/js/dev"
-                    :asset-path           "js/dev"
-                    :source-map-timestamp true
-                    :preloads             [devtools.preload]
-                    :external-config
-                    {:devtools/config
-                     {:features-to-install    [:formatters :hints]
-                      :fn-symbol              "F"
-                      :print-config-overrides true}}}}
 
     {:id           "hostedcards"
      :source-paths ["src/devcards" "src/cljs"]
@@ -67,16 +51,4 @@
                     :optimizations :advanced
                     :devcards      true
                     :output-to     "resources/public/js/devcards.js"
-                    :output-dir    "resources/public/js/hostedcards"}}
-
-    {:id           "min"
-     :source-paths ["src/cljs"]
-     :compiler     {:main            tx-demo.core
-                    :optimizations   :advanced
-                    :output-to       "resources/public/js/app.js"
-                    :output-dir      "resources/public/js/min"
-                    :elide-asserts   true
-                    :closure-defines {goog.DEBUG false}
-                    :pretty-print    false}}
-
-    ]})
+                    :output-dir    "resources/public/js/hostedcards"}}]})

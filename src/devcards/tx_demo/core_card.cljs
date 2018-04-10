@@ -2,7 +2,8 @@
   (:require-macros
    [devcards.core :as dc])
   (:require
-   [tx-demo.demo]))
+   [tx-demo.intro]
+   [tx-demo.complexities]))
 
-
-(dc/start-devcard-ui!)
+(defn reload []
+ (dc/start-devcard-ui!) )
