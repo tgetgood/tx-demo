@@ -1,7 +1,8 @@
 (ns tx-demo.intro
-    (:require-macros
-     [devcards.core :refer [defcard-doc]]
-     [tx-demo.macros :refer [eval-block code-block]]))
+  (:require [devcards.core])
+  (:require-macros
+   [devcards.core :refer [defcard-doc]]
+   [tx-demo.macros :refer [eval-block code-block]]))
 
 (def to-number
   {:one   1

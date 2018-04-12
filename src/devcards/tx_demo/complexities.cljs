@@ -1,4 +1,5 @@
 (ns tx-demo.complexities
+  (:require [devcards.core])
   (:require-macros
      [devcards.core :refer [defcard-doc]]
      [tx-demo.macros :refer [eval-block code-block]]))
@@ -10,17 +11,24 @@
 
 ```clj
 (defn my-transducer [rf]
-  (let [state (volatile! {})]                          ; (0) State
+  (let [state (volatile! {})]                          ; (1) State
     (fn
-      ([] (rf))                                        ; (1) Monoid for reduce
-      ([final] (rf (wrap-up final)))                   ; (2) Cleanup / normal termination
+      ([] (rf))                                        ; (2) Monoid for reduce
+      ([final] (rf (wrap-up final)))                   ; (3) Cleanup
       ([so-far next]
         (let [intermediate (rf so-far something)]
-          (if (reduced? intermediate)                  ; (3) Early termination
+          (if (reduced? intermediate)                  ; (4) Early termination
             @intermediate
-            (rf (somehow-combine so-far intermediate)) ; (4) Heart of the Matter
+            (rf intermediate next)                     ; (5) Heart of the Matter
 ))))))
-```"
+```\n\n"
+
+  "Of the these, (2) & (4) are abstraction leaks from sequences into
+  transducers, (1) & (3) are about retaining state externally from the values
+  being transformed (1 stores and 3 flushes at the end of the process if
+  necessary/applicable), and 5 is really what transduction is about."
+
+  ""
 
   "\n## Examples of Transducers\n\n"
 

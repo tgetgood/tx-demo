@@ -1,4 +1,5 @@
-(ns tx-demo.macros)
+(ns tx-demo.macros
+  (:require [clojure.pprint :refer [pprint]]))
 
 (defmacro repl [form]
   `(str ~(str form) "\n  => " ~form))
@@ -14,5 +15,5 @@
   {:style/indent 0}
   [& forms]
   `(str "\n```clj \n"
-        ~@(interpose "\n" (map str forms))
+        ~@(interpose "\n\n" (map str forms))
        "\n```\n"))
