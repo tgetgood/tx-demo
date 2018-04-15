@@ -4,8 +4,6 @@
   (:require-macros [devcards.core :refer [defcard-doc]]
                    [tx-demo.macros :refer [eval-block code-block]]))
 
-(def base (r/atom 1))
-
 (defn last-rf
   "Reducing fn that acts like last on a sequential collection"
   ([] nil)
@@ -14,26 +12,38 @@
 
 (def tx-1 (comp (map inc) (filter even?)))
 
-(defn reaction-1 [tx input]
+(defn reaction-1 [xform input]
   (r/make-reaction
    (fn []
-     (transduce tx last-rf [@input]))))
+     (transduce xform last-rf [@input]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;; Proper Way
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(extend-type r/Reaction
-  IReduce
+(extend-protocol IReduce
+  r/Reaction
   (-reduce
     ([this f]
      (-reduce this f (f)))
     ([this f start]
-     (let [last (volatile! start)]
+     (let [last (atom start)]
        (r/make-reaction
         (fn []
           (let [next (f @last @this)]
-            (vreset! last next)
+            (reset! last next)
+            next))
+        :auto-run true))))
+  r/RAtom
+  (-reduce
+    ([this f]
+     (-reduce this f (f)))
+    ([this f start]
+     (let [last (atom start)]
+       (r/make-reaction
+        (fn []
+          (let [next (f @last @this)]
+            (reset! last next)
             next))
         :auto-run true)))))
 
@@ -44,11 +54,45 @@
 ;;;;; Examples
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def base (r/atom 1))
+
+(def even+1?
+  (r/make-reaction
+   (fn []
+     (even? (inc @base) ))))
+
+#_(re-frame/reg-sub :t
+        [:base]
+        (fn [base]
+          (even? (inc base))))
+
+(def t (reaction (comp (map inc) (map even?)) base))
+
+(let [sum (atom 0)]
+  (def sum-1
+    (r/make-reaction
+     (fn []
+       (swap! sum + @base)))))
+
+(def temp (atom 0))
+
+#_(re-frame/reg-sub
+ :sum
+ [:base]
+ (fn [acc base]
+   (swap! temp + base)))
+
+#_(re-frame/reg-event-db
+ :click
+ (fn [db [_ val]]
+   (update db + val)))
+
 (def follow (r/make-reaction (fn [] @base)))
 
-(def sum (reduce + follow))
+(def sum (reduce + base))
 
-(def t (reaction tx-1 sum))
+
+(map (comp even? inc)) (comp (map inc) (map even?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Cards
@@ -86,3 +130,10 @@
    (fn []
      (transduce tx last-rf [@input]))))
 ```")
+
+(defn xform [coll]
+  (->> coll
+       (map inc)
+       (filter even?)))
+
+(def txform (comp (map inc) (filter even?)))

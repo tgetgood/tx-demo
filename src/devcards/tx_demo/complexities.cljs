@@ -5,7 +5,7 @@
      [tx-demo.macros :refer [eval-block code-block]]))
 
 (defcard-doc
-  "## Anatomy of a Transducer\n\n"
+  "## Anatomy of a Transducer"
 
   "The definition of a transducer looks like this:
 
@@ -30,9 +30,9 @@
 
   ""
 
-  "\n## Examples of Transducers\n\n"
+  "## Examples of Transducers"
 
-  "For example, here's the transducer for `map`:\n\n"
+  "For example, here's the transducer for `map`:"
 
   "
 ```clj
