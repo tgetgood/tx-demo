@@ -32,7 +32,7 @@
 
   "How does this compare to our recursive version above? In this version, part
   (1), the breaking down of the collection is entirely handled by `reduce`, but
-  we're still on the hook for parts (2) & (3). It's a start."
+  we're still on the hook for parts (2) & (3)."
 
   "In order to separate parts (2) and (3) we need to step back a bit. Consider
   reduce by itself:"
@@ -45,7 +45,7 @@
 
   "We can see from this that if we ignore the transformation, reduce completely
   separates the decomposition of its input from the construction of the
-  result. That's 2 thirds of the battle."
+  result. That's two thirds of the battle."
 
   "Let's try adding transformation back in:"
 
@@ -94,5 +94,5 @@ set)"
   we're done."
 
   "How does `(map f)` work? We'll get to that. But first I'm going to prove that
-  we're done by implementing `map` for Reagent Reactions without reimplementing
-  map at all.")
+  we're done by implementing mapping for Reagent's reactions and ratoms without
+  implementing `map` at all.")
