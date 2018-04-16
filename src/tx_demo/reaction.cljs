@@ -4,21 +4,27 @@
   (:require-macros [devcards.core :refer [defcard-doc]]
                    [tx-demo.macros :refer [eval-block code-block]]))
 
-(defn last-rf
-  "Reducing fn that acts like last on a sequential collection"
-  ([] nil)
-  ([final] final)
-  ([_ next] next))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;; Reactions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def tx-1 (comp (map inc) (filter even?)))
+(def start (r/atom 1))
 
-(defn reaction-1 [xform input]
+(def follow (r/make-reaction (fn [] @base)))
+
+(def odd-start?
   (r/make-reaction
    (fn []
-     (transduce xform last-rf [@input]))))
+     (even? (inc @base) ))))
+
+(let [sum (atom 0)]
+  (def sum-1
+    (r/make-reaction
+     (fn []
+       (swap! sum + @base)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;; Proper Way
+;;;;; Reduction for Reactions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (extend-protocol IReduce
@@ -47,8 +53,16 @@
             next))
         :auto-run true)))))
 
-(defn reaction [tx input]
-  (transduce tx last-rf input))
+(defn last-rf
+  "Reducing fn that acts like last on a sequential collection"
+  ([] nil)
+  ([final] final)
+  ([_ next] next))
+
+(defn reaction
+  ([input] input)
+  ([tx input]
+   (transduce tx last-rf input)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;; Examples
@@ -56,43 +70,12 @@
 
 (def base (r/atom 1))
 
-(def even+1?
-  (r/make-reaction
-   (fn []
-     (even? (inc @base) ))))
+(def follow-1 (reaction base))
 
-#_(re-frame/reg-sub :t
-        [:base]
-        (fn [base]
-          (even? (inc base))))
-
-(def t (reaction (comp (map inc) (map even?)) base))
-
-(let [sum (atom 0)]
-  (def sum-1
-    (r/make-reaction
-     (fn []
-       (swap! sum + @base)))))
-
-(def temp (atom 0))
-
-#_(re-frame/reg-sub
- :sum
- [:base]
- (fn [acc base]
-   (swap! temp + base)))
-
-#_(re-frame/reg-event-db
- :click
- (fn [db [_ val]]
-   (update db + val)))
-
-(def follow (r/make-reaction (fn [] @base)))
+(def odd-base?
+  (reaction (comp (map inc) (map even?)) base))
 
 (def sum (reduce + base))
-
-
-(map (comp even? inc)) (comp (map inc) (map even?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Cards
