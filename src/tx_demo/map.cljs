@@ -29,14 +29,13 @@
   isn't accomplished by separate implementations, but via polymorphism."
 
   "`map` is implemented in terms of the `ISeq` protocol, so that any collection
-  that impelements it can be passed into `map`."
+  that implements it can be passed into `map`."
 
   "This saves us from having N data structures with N functions. The problem is
-  that we lose types. No matter what the input type, `map` always returns a
-  `LazySeq`. If you want a different collection type, there's always `into`, but
-  that comes at the cost of making a two collections instead of one."
-
-  ""
+  that we lose control of the return type. No matter what the input type, `map`
+  always returns a `LazySeq`. If you want a different collection type, there's
+  always `into`, but that comes at the cost of making two collections instead
+  of one."
 
   "Let's look at how a simplified map works conceptually:"
 
