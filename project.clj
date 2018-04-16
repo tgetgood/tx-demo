@@ -6,7 +6,7 @@
 
   :min-lein-version "2.5.3"
 
-  :source-paths ["src/clj"]
+  :source-paths ["src"]
 
   :plugins [[lein-cljsbuild "1.1.4"]]
 
@@ -27,8 +27,8 @@
 
   :cljsbuild
   {:builds
-   [{:id           "devcards"
-     :source-paths ["src/devcards" "src/cljs"]
+   [{:id           "dev"
+     :source-paths ["src"]
      :figwheel     {:devcards true
                     :on-jsload "tx-demo.core-card/reload"}
      :compiler     {:main                 "tx-demo.core-card"
@@ -45,8 +45,8 @@
                       :print-config-overrides true}}}}
 
 
-    {:id           "hostedcards"
-     :source-paths ["src/devcards" "src/cljs"]
+    {:id           "min"
+     :source-paths ["src"]
      :compiler     {:main          "tx-demo.core-card"
                     :optimizations :advanced
                     :devcards      true
