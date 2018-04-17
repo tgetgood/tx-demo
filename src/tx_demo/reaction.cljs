@@ -125,16 +125,6 @@
 
 (def txform (comp (map inc) (filter even?)))
 
-(defn push-multiple [rf acc pushes]
-  (loop [acc acc
-         [input & more] pushes]
-    (if input
-      (let [temp (rf acc input)]
-        (if (reduced? temp)
-          temp
-          (recur temp more)))
-      acc)))
-
 (defn make-transducer [{:keys [init-state flush next-fn]}]
   (fn [rf]
     (let [state (atom init-state)]
@@ -142,20 +132,20 @@
         ([] (rf))
         ([final]
          (if flush
-           (let [flushed (flush state)]
+           (let [flushed (flush @state)]
              (cond
                (:emit flushed)
                (let [next (rf final (:emit flushed))]
                  (rf (unreduced next)))
 
                (:emit-multiple flushed)
-               (let [out (push-multiple rf final (:emit-multiple flushed))]
+               (let [out (reduce rf final (:emit-multiple flushed))]
                  (rf (unreduced out)))
 
                :else (rf final)))
            (rf final)))
         ([acc input]
-         (let [ret (next-fn state input)]
+         (let [ret (next-fn @state input)]
            (when-let [new-state (:reset-state ret)]
              (reset! state new-state))
            (cond
@@ -163,6 +153,6 @@
              (rf acc (:emit ret))
 
              (:emit-multiple ret)
-             (push-multiple rf acc (:emit-multiple ret))
+             (reduce rf acc (:emit-multiple ret))
 
              :else acc)))))))
