@@ -41,7 +41,7 @@
 ```"
 
   "Scary, right? And the kicker is that 90% of that code is just boiler
-  plate. Confusing, scary boilerplate. So let's get rid of it:"
+  plate. Confusing, scary boilerplate. So let's simplify it a bit:"
 
   (code-block
    "(defn map [f]

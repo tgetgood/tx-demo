@@ -10,18 +10,21 @@
 
 (def start (r/atom 1))
 
-(def follow (r/make-reaction (fn [] @base)))
+(def follow
+  (r/make-reaction
+   (fn []
+     @start)))
 
 (def odd-start?
   (r/make-reaction
    (fn []
-     (even? (inc @base) ))))
+     (even? (inc @start)))))
 
 (let [sum (atom 0)]
   (def sum-1
     (r/make-reaction
      (fn []
-       (swap! sum + @base)))))
+       (swap! sum + @start)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;; Reduction for Reactions
@@ -40,6 +43,7 @@
             (reset! last next)
             next))
         :auto-run true))))
+
   r/RAtom
   (-reduce
     ([this f]
@@ -120,3 +124,45 @@
        (filter even?)))
 
 (def txform (comp (map inc) (filter even?)))
+
+(defn push-multiple [rf acc pushes]
+  (loop [acc acc
+         [input & more] pushes]
+    (if input
+      (let [temp (rf acc input)]
+        (if (reduced? temp)
+          temp
+          (recur temp more)))
+      acc)))
+
+(defn make-transducer [{:keys [init-state flush next-fn]}]
+  (fn [rf]
+    (let [state (atom init-state)]
+      (fn
+        ([] (rf))
+        ([final]
+         (if flush
+           (let [flushed (flush state)]
+             (cond
+               (:emit flushed)
+               (let [next (rf final (:emit flushed))]
+                 (rf (unreduced next)))
+
+               (:emit-multiple flushed)
+               (let [out (push-multiple rf final (:emit-multiple flushed))]
+                 (rf (unreduced out)))
+
+               :else (rf final)))
+           (rf final)))
+        ([acc input]
+         (let [ret (next-fn state input)]
+           (when-let [new-state (:reset-state ret)]
+             (reset! state new-state))
+           (cond
+             (:emit ret)
+             (rf acc (:emit ret))
+
+             (:emit-multiple ret)
+             (push-multiple rf acc (:emit-multiple ret))
+
+             :else acc)))))))
